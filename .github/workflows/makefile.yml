@@ -14,5 +14,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up NASM
+      uses: ilammy/setup-nasm@v1
+
     - name: build
       run: make
