@@ -4,6 +4,7 @@
 
 %define SYS_BIND    49
 %define SYS_LISTEN  50
+%define SYS_ACCEPT  43
 
 struc sockaddr_in
     .sin_family:  resw 1    
@@ -23,6 +24,13 @@ section .data
       at sockaddr_in.sin_zero,    times 8 db 0
     iend
 
+  client_len: dd sockaddr_in_size
+
+section .bss
+  align 4
+
+  addr_client: resb sockaddr_in_size
+
 section .text
   global sock
   default rel
@@ -35,6 +43,7 @@ sock:
   MOV rdx, 0 ; socket protocol 0 = default for domain
   SYSCALL
 
+  ; salva rax = socket fd
   MOV r12, rax
 
   ; bind socket
@@ -50,8 +59,14 @@ sock:
   MOV rsi, 3
   SYSCALL
 
-  ; returns fd
-  MOV rax, r12
+  ; accept
+  MOV rax, SYS_ACCEPT
+  MOV rdi, r12
+  LEA rsi, [addr_client]
+  LEA rdx, [client_len]
+  SYSCALL
+
+  ; returns client fd
   RET
 
 section .note.GNU-stack
