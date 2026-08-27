@@ -15,7 +15,7 @@ endstruc
 section .data
   align 4
 
-  addr:
+  addr_in:
     istruc sockaddr_in
       at sockaddr_in.sin_family,  dw  AF_INET
       at sockaddr_in.sin_port,    dw  0x401f  ; 8000 big endian
@@ -40,7 +40,7 @@ sock:
   ; bind socket
   MOV rax, SYS_BIND
   MOV rdi, r12
-  MOV rsi, addr
+  MOV rsi, addr_in
   MOV rdx, sockaddr_in_size
   SYSCALL
 
@@ -50,6 +50,8 @@ sock:
   MOV rsi, 3
   SYSCALL
 
+  ; returns fd
+  MOV rax, r12
   RET
 
 section .note.GNU-stack
