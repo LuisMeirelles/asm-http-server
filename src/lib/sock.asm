@@ -1,8 +1,9 @@
 %define SYS_SOCKET  41
 %define AF_INET     2
-%define SOCK_STREAM 2
+%define SOCK_STREAM 1
 
 %define SYS_BIND    49
+%define SYS_LISTEN  50
 
 struc sockaddr_in
     .sin_family:  resw 1    
@@ -34,11 +35,19 @@ sock:
   MOV rdx, 0 ; socket protocol 0 = default for domain
   SYSCALL
 
+  MOV r12, rax
+
   ; bind socket
-  MOV rdi, rax
   MOV rax, SYS_BIND
+  MOV rdi, r12
   MOV rsi, addr
   MOV rdx, sockaddr_in_size
+  SYSCALL
+
+  ; listen
+  MOV rax, SYS_LISTEN
+  MOV rdi, r12
+  MOV rsi, 3
   SYSCALL
 
   RET
