@@ -26,9 +26,10 @@ int main(void)
 {
   int socket_fd = sock();
 
-  bind_socket(socket_fd);
+  // bind_socket(socket_fd);
   
   printf("%d\n", socket_fd);
+  perror("libsock");
 
   return 0;
 
