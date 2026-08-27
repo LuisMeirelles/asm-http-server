@@ -1,0 +1,47 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"          # dispara em tags tipo v1.0.0
+  workflow_dispatch:    # permite rodar manualmente também
+
+permissions:
+  contents: write        # necessário pra publicar release
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up nasm
+        uses: ilammy/setup-nasm@v1
+
+      - name: Build (make)
+        run: make build
+
+      - name: Renomear binário
+        run: cp bin/main bin/main-linux-x86_64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: main-linux-x86_64
+          path: bin/main-linux-x86_64
+
+  release:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: main-linux-x86_64
+          path: dist
+
+      - name: Publicar Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/main-linux-x86_64
