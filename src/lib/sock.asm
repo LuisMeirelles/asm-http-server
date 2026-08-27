@@ -49,7 +49,7 @@ sock:
   ; bind socket
   MOV rax, SYS_BIND
   MOV rdi, r12
-  MOV rsi, addr_in
+  LEA rsi, [addr_in]
   MOV rdx, sockaddr_in_size
   SYSCALL
 
