@@ -1,3 +1,5 @@
+%include "syscalls.inc"
+
 %define SYS_SOCKET  41
 %define AF_INET     2
 %define SOCK_STREAM 1
@@ -46,11 +48,7 @@ listen:
   MOV word [addr_in + 2], cx
 
   ; cria o socket, retornando o file descriptor em %rax
-  MOV rax, SYS_SOCKET
-  MOV rdi, AF_INET
-  MOV rsi, SOCK_STREAM
-  MOV rdx, 0 ; socket protocol 0 = default for domain
-  SYSCALL
+  SOCKET_CREATE
 
   ; salva rax = socket fd
   MOV r12, rax
