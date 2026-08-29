@@ -28,3 +28,11 @@
   SYSCALL
 %endmacro
 
+%macro ACCEPT 3
+  MOV rax, SYS_ACCEPT
+  MOV rdi, %1
+  LEA rsi, [%2]
+  LEA rdx, [%3]
+  SYSCALL
+%endmacro
+

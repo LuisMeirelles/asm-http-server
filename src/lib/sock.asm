@@ -40,23 +40,15 @@ listen:
   ; cria o socket, retornando o file descriptor em %rax
   SOCKET_CREATE
 
-  ; salva rax = socket fd
   MOV r12, rax
 
-  ; bind socket
   BIND_SOCKET r12, addr_in, sockaddr_in_size
 
-  ; listen
   LISTEN_SOCKET r12, 3
 
-  ; accept
-  MOV rax, SYS_ACCEPT
-  MOV rdi, r12
-  LEA rsi, [addr_client]
-  LEA rdx, [client_len]
-  SYSCALL
+  ; %rax = client fd
+  ACCEPT r12, addr_client, client_len
 
-  ; returns client fd
   RET
 
 section .note.GNU-stack
