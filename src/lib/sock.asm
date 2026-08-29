@@ -6,12 +6,14 @@
 %define SYS_LISTEN  50
 %define SYS_ACCEPT  43
 
+%define INADDR_ANY  0
+
 struc sockaddr_in
-    .sin_family:  resw 1    
-    .sin_port:    resw 1    
-    .sin_addr:    resd 1    
+    .sin_family:  resw 1
+    .sin_port:    resw 1  ; big endian
+    .sin_addr:    resd 1  ; big endian
     .sin_zero:    resb 8
-endstruc                   
+endstruc
 
 section .data
   align 4
@@ -19,8 +21,8 @@ section .data
   addr_in:
     istruc sockaddr_in
       at sockaddr_in.sin_family,  dw  AF_INET
-      at sockaddr_in.sin_port,    dw  0x401f  ; 8000 big endian
-      at sockaddr_in.sin_addr,    dd  0       ; INADDR_ANY big endian
+      at sockaddr_in.sin_port,    dw  0
+      at sockaddr_in.sin_addr,    dd  INADDR_ANY
       at sockaddr_in.sin_zero,    times 8 db 0
     iend
 
@@ -32,10 +34,17 @@ section .bss
   addr_client: resb sockaddr_in_size
 
 section .text
-  global sock
+  global listen
   default rel
 
-sock:
+; int listen(uint16_t port);
+listen:
+  ; passa o parâmetro `port` para addr_in.sin_port (big endian)
+  MOV cx, di
+  ROL cx, 8
+
+  MOV word [addr_in + 2], cx
+
   ; cria o socket, retornando o file descriptor em %rax
   MOV rax, SYS_SOCKET
   MOV rdi, AF_INET

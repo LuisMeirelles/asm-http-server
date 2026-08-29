@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <sys/socket.h>
+#include <stdint.h>
 
-extern int sock();
+extern int listen(uint16_t port);
 
 int main(void)
 {
-  int client_fd = sock();
+  int client_fd = listen(8001);
 
   printf("%d\n", client_fd);
   
