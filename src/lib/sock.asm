@@ -44,17 +44,10 @@ listen:
   MOV r12, rax
 
   ; bind socket
-  MOV rax, SYS_BIND
-  MOV rdi, r12
-  LEA rsi, [addr_in]
-  MOV rdx, sockaddr_in_size
-  SYSCALL
+  BIND_SOCKET r12, addr_in, sockaddr_in_size
 
   ; listen
-  MOV rax, SYS_LISTEN
-  MOV rdi, r12
-  MOV rsi, 3
-  SYSCALL
+  LISTEN_SOCKET r12, 3
 
   ; accept
   MOV rax, SYS_ACCEPT
