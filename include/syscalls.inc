@@ -1,3 +1,5 @@
+%include "constants.inc"
+
 %macro SOCKET_CREATE 0
   MOV rax, SYS_SOCKET
   MOV rdi, AF_INET

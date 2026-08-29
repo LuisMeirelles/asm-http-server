@@ -1,15 +1,5 @@
 %include "syscalls.inc"
 
-%define SYS_SOCKET  41
-%define AF_INET     2
-%define SOCK_STREAM 1
-
-%define SYS_BIND    49
-%define SYS_LISTEN  50
-%define SYS_ACCEPT  43
-
-%define INADDR_ANY  0
-
 struc sockaddr_in
     .sin_family:  resw 1
     .sin_port:    resw 1  ; big endian
