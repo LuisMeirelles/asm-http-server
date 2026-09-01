@@ -1,5 +1,10 @@
 %include "syscalls.inc"
 
+%define ORIGEM_SOCKET 0x0100
+%define ORIGEM_BIND   0x0200
+%define ORIGEM_LISTEN 0x0300
+%define ORIGEM_ACCEPT 0x0400
+
 struc sockaddr_in
     .sin_family:  resw 1
     .sin_port:    resw 1  ; big endian
@@ -79,11 +84,11 @@ listen:
 
   CMP rax, 0
   JGE endif_bind
-    LEA rdi, [mensagem_erro_bind]
-    MOV rsi, mensagem_erro_bind.len
-    MOV rdx, rax
-
-    CALL fatal_error
+    NEG rax
+    OR  rax, ORIGEM_BIND
+    NEG rax
+    POP r12
+    RET
 
   endif_bind:
 
