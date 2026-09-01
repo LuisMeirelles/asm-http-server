@@ -41,7 +41,9 @@ section .bss
   align 4
 
   addr_client: resb sockaddr_in_size
+  
   buf resb 1024
+  .len: equ $ - buf
 
 section .text
   global listen
@@ -56,6 +58,29 @@ fatal_error:
   WRITE STDERR, r12, r13
   EXIT r14
 
+
+; int strlen(const char *string)
+strlen:
+  XOR rcx, rcx ; size_t count = 0
+
+  .loop: ; while (1)
+    MOVZX ebx, byte [rdi] ; char character = *string
+
+    CMP bl, 0 ; if (character == '\0')
+    JE .end_strlen ; break
+
+    INC rcx
+
+    ; string++
+    ; MOV rdi, rsi
+    INC rdi
+
+    JMP .loop
+
+  .end_strlen:
+    MOV rax, rcx ; size_t value = count
+    RET ; return value
+
 ; int listen(uint16_t port, char *(*handler)(char*))
 listen:
   PUSH r12
@@ -68,9 +93,9 @@ listen:
 
   MOV word [addr_in + 2], cx
 
-  ; cria o socket, retornando o file descriptor em %rax
   SOCKET_CREATE
-  
+ 
+  ; %r12 = server_fd
   MOV r12, rax
 
   CMP rax, 0
@@ -107,9 +132,9 @@ listen:
 
   endif_listen:
 
-  ; %rax = client fd
   ACCEPT r12, addr_client, client_len
 
+  ; %r13 = client_fd
   MOV r13, rax
 
   CMP rax, 0
@@ -124,7 +149,7 @@ listen:
 
   LEA r14, [buf]
 
-  READ r13, r14, 1024
+  READ r13, r14, buf.len
 
   MOV rdi, r14
   POP rax
@@ -132,7 +157,12 @@ listen:
 
   MOV r15, rax
 
-  WRITE r13, r15, 4
+  MOV rdi, r15
+  CALL strlen
+
+  MOV r8, rax
+
+  WRITE r13, r15, r8
 
   POP r12
 
