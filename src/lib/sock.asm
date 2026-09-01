@@ -61,6 +61,8 @@ fatal_error:
 
 ; int strlen(const char *string)
 strlen:
+  PUSH rbx
+
   XOR rcx, rcx ; size_t count = 0
 
   .loop: ; while (1)
@@ -79,6 +81,9 @@ strlen:
 
   .end_strlen:
     MOV rax, rcx ; size_t value = count
+
+    POP rbx
+
     RET ; return value
 
 ; int listen(uint16_t port, char *(*handler)(char*))
@@ -87,8 +92,9 @@ listen:
   PUSH r13
   PUSH r14
   PUSH r15
+  PUSH rbx
 
-  PUSH rsi
+  MOV rbx, rsi
 
   ; passa o parâmetro `port` para addr_in.sin_port (big endian)
   MOV cx, di
@@ -135,41 +141,46 @@ listen:
 
   endif_listen:
 
-  ACCEPT r12, addr_client, client_len
+  .loop:
+    ACCEPT r12, addr_client, client_len
 
-  ; %r13 = client_fd
-  MOV r13, rax
+    ; %r13 = client_fd
+    MOV r13, rax
 
-  CMP rax, 0
-  JGE endif_accept
-    LEA rdi, [mensagem_erro_accept]
-    MOV rsi, mensagem_erro_accept.len
-    MOV rdx, rax
+    CMP rax, 0
+    JGE .endif_accept
+      LEA rdi, [mensagem_erro_accept]
+      MOV rsi, mensagem_erro_accept.len
+      MOV rdx, rax
 
-    CALL fatal_error
+      CALL fatal_error
 
-  endif_accept:
+    .endif_accept:
 
-  ; %r14 = endereço efetivo do buffer
-  LEA r14, [buf]
+    ; %r14 = endereço efetivo do buffer
+    LEA r14, [buf]
 
-  READ r13, r14, buf.len
+    READ r13, r14, buf.len
 
-  MOV rdi, r14
-  POP rax
-  CALL rax
+    MOV rdi, r14
+    CALL rbx
 
-  ; %r14 = retorno do handler
-  MOV r14, rax
+    ; %r14 = retorno do handler
+    MOV r14, rax
 
-  MOV rdi, r14
-  CALL strlen
+    MOV rdi, r14
+    CALL strlen
 
-  ; %r15 tamanho do retorno do handler
-  MOV r15, rax
+    ; %r15 tamanho do retorno do handler
+    MOV r15, rax
 
-  WRITE r13, r14, r15
+    WRITE r13, r14, r15
 
+    CLOSE r13
+
+    JMP .loop
+
+  POP rbx
   POP r15
   POP r14
   POP r13

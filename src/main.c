@@ -10,9 +10,9 @@
 #define ORIGEM_LISTEN 3
 #define ORIGEM_ACCEPT 4
 
-extern void listen(uint16_t port, char *(*handler)(char*));
+extern void listen(uint16_t port, const char *(*handler)(char*));
 
-char *parse_request(char *buf)
+const char *parse_request(char *buf)
 {
   char *endpoint;
 
@@ -23,7 +23,14 @@ char *parse_request(char *buf)
     endpoint = strtok(str, " \n");
 
   if (strcmp(endpoint, "/ping") == 0) {
-    return "pong";
+    const char *response =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: 4\r\n"
+        "\r\n"
+        "pong";
+
+    return response;
   }
 
   return "";

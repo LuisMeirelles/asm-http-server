@@ -7,6 +7,7 @@
 %define SYS_READ    0
 %define SYS_WRITE   1
 %define SYS_EXIT    60
+%define SYS_CLOSE   21
 
 %macro SOCKET_CREATE 0
   MOV rax, SYS_SOCKET
@@ -56,6 +57,13 @@
   MOV rsi, %2 ; buffer
   MOV rdx, %3 ; count
 
+  SYSCALL
+%endmacro
+
+%macro CLOSE 1
+  MOV rax, SYS_CLOSE
+
+  MOV rdi, %1 ; file descriptor
   SYSCALL
 %endmacro
 
