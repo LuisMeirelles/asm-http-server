@@ -25,22 +25,23 @@ section .data
 
   client_len: dd sockaddr_in_size
 
-  mensagem_erro_socket db  "erro socket"
+  mensagem_erro_socket db  "erro socket", 0x0A
   .len: equ $ - mensagem_erro_socket
 
-  mensagem_erro_bind db  "erro bind"
+  mensagem_erro_bind db  "erro bind", 0x0A
   .len: equ $ - mensagem_erro_bind
   
-  mensagem_erro_listen db  "erro listen"
+  mensagem_erro_listen db  "erro listen", 0x0A
   .len: equ $ - mensagem_erro_listen
 
-  mensagem_erro_accept db  "erro accept"
+  mensagem_erro_accept db  "erro accept", 0x0A
   .len: equ $ - mensagem_erro_accept
 
 section .bss
   align 4
 
   addr_client: resb sockaddr_in_size
+  buf resb 1024
 
 section .text
   global listen
@@ -55,9 +56,11 @@ fatal_error:
   WRITE STDERR, r12, r13
   EXIT r14
 
-; int listen(uint16_t port);
+; int listen(uint16_t port, char *(*handler)(char*))
 listen:
   PUSH r12
+
+  PUSH rsi
 
   ; passa o parâmetro `port` para addr_in.sin_port (big endian)
   MOV cx, di
@@ -84,11 +87,11 @@ listen:
 
   CMP rax, 0
   JGE endif_bind
-    NEG rax
-    OR  rax, ORIGEM_BIND
-    NEG rax
-    POP r12
-    RET
+    LEA rdi, [mensagem_erro_bind]
+    MOV rsi, mensagem_erro_bind.len
+    MOV rdx, rax
+
+    CALL fatal_error
 
   endif_bind:
 
@@ -107,6 +110,8 @@ listen:
   ; %rax = client fd
   ACCEPT r12, addr_client, client_len
 
+  MOV r13, rax
+
   CMP rax, 0
   JGE endif_accept
     LEA rdi, [mensagem_erro_accept]
@@ -116,6 +121,18 @@ listen:
     CALL fatal_error
 
   endif_accept:
+
+  LEA r14, [buf]
+
+  READ r13, r14, 1024
+
+  MOV rdi, r14
+  POP rax
+  CALL rax
+
+  MOV r15, rax
+
+  WRITE r13, r15, 4
 
   POP r12
 

@@ -4,6 +4,7 @@
 %define SYS_BIND    49
 %define SYS_LISTEN  50
 %define SYS_ACCEPT  43
+%define SYS_READ    0
 %define SYS_WRITE   1
 %define SYS_EXIT    60
 
@@ -36,6 +37,16 @@
   LEA rsi, [%2]
   LEA rdx, [%3]
   SYSCALL
+%endmacro
+
+%macro READ 3
+    MOV rax, SYS_READ ; `read` syscall
+
+    MOV rdi, %1 ; file descriptor
+    MOV rsi, %2 ; buffer
+    MOV rdx, %3 ; count
+
+    SYSCALL
 %endmacro
 
 %macro WRITE 3
