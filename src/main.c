@@ -5,6 +5,11 @@
 
 #define ENDPOINT_POSITION_IN_REQUEST 2
 
+#define ORIGEM_SOCKET 1
+#define ORIGEM_BIND   2
+#define ORIGEM_LISTEN 3
+#define ORIGEM_ACCEPT 4
+
 extern int listen(uint16_t port);
 
 char *parse_request(char buf[])
@@ -40,21 +45,28 @@ int main(void)
   if (client_fd < 0) {
     client_fd = -client_fd;
 
-    if ((client_fd & 0x0100) == 0x0100) {
-      dprintf(2, "erro na criação do socket\n");
-      client_fd = 0x0100 ^ client_fd;
-    } else if ((client_fd & 0x0200) == 0x0200) {
-      dprintf(2, "erro no bind do socket\n");
-      client_fd = 0x0200 ^ client_fd;
-    } else if ((client_fd & 0x0300) == 0x0300) {
-      dprintf(2, "erro no listen do socket\n");
-      client_fd = 0x0300 ^ client_fd;
-    } else if ((client_fd & 0x0400) == 0x0400) {
-      dprintf(2, "erro no accept do socket\n");
-      client_fd = 0x0400 ^ client_fd;
+    int origin = (client_fd >> 8) & 0xFF;
+    int error = client_fd & 0xFF;
+
+    switch (origin) {
+      case ORIGEM_SOCKET:
+        dprintf(2, "erro na criação do socket\n");
+        break;
+
+      case ORIGEM_BIND:
+        dprintf(2, "erro no bind do socket\n");
+        break;
+
+      case ORIGEM_LISTEN:
+        dprintf(2, "erro no listen do socket\n");
+        break;
+
+      case ORIGEM_ACCEPT:
+        dprintf(2, "erro no accept do socket\n");
+        break;
     }
 
-    return -client_fd;
+    return -error;
   }
 
   char buf[1024] = {0};
