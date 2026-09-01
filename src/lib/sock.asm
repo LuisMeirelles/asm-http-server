@@ -84,6 +84,9 @@ strlen:
 ; int listen(uint16_t port, char *(*handler)(char*))
 listen:
   PUSH r12
+  PUSH r13
+  PUSH r14
+  PUSH r15
 
   PUSH rsi
 
@@ -147,6 +150,7 @@ listen:
 
   endif_accept:
 
+  ; %r14 = endereço efetivo do buffer
   LEA r14, [buf]
 
   READ r13, r14, buf.len
@@ -155,15 +159,20 @@ listen:
   POP rax
   CALL rax
 
-  MOV r15, rax
+  ; %r14 = retorno do handler
+  MOV r14, rax
 
-  MOV rdi, r15
+  MOV rdi, r14
   CALL strlen
 
-  MOV r8, rax
+  ; %r15 tamanho do retorno do handler
+  MOV r15, rax
 
-  WRITE r13, r15, r8
+  WRITE r13, r14, r15
 
+  POP r15
+  POP r14
+  POP r13
   POP r12
 
   RET
